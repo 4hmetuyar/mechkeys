@@ -44,7 +44,7 @@ python3 run.py
 
 **Uygulama içi:** Menüde kaç ses yüklendiği; **Ses seti** alt menüsünden klasör/paket seçimi (tercih kaydedilir); **Erişilebilirlik** / **Giriş izleme** için Sistem Ayarları kısayolu; **Sesleri yeniden yükle**; ses seviyesi **UserDefaults** ile hatırlanır; tuş **tekrarında debounce** (basılı tutunca makineli tık azalır); menü çubuğu ikonunda **tooltip**.
 
-**Not:** `mechkeys-download-sounds` varsayılan olarak Blue / Brown / Red paketlerini ses kökünün **alt klasörlerine** indirir; elle de `sounds/<set_adı>/*.wav` düzeni kullanabilirsin. Kökte `sounds/*.wav` yoksa indirme dener; başarısız olursa [DISTRIBUTING.md](DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
+**Not:** `mechkeys-download-sounds` Mechvibes’tan (GitHub) **bir dizi** Cherry / Topre / EG tek-OGG paketini ses kökünün **alt klasörlerine** indirir; dolu klasör atlanır. Elle de `sounds/<set_adı>/*.wav` kullanabilirsin. Kökte hiç WAV yoksa indirme dener; başarısız olursa [DISTRIBUTING.md](DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
 
 ### Yerel çalıştırma seçenekleri
 

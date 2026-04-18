@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Cherry MX Blue ses dosyalarını Mechvibes açık kaynak paketinden indirir.
+Mechvibes (GitHub) açık kaynak paketlerinden gerçek tuş sesi WAV üretir.
 
-Gerçek mekanik sesler: GitHub’daki Mechvibes ``sound.ogg`` + ``config.json``
-tanımlarından pygame ile PCM dilimleri üretilir (ffmpeg gerekmez).
+Desteklenen profiller: config.json içinde tek bir ``.ogg`` (``sound`` alanı,
+ör. ``sound.ogg`` / ``purple.ogg``) ve ``defines`` içinde ``[offset_ms, süre_ms]``
+dilimleri. Çoklu mp3 (travel vb.) bu script ile indirilmez.
 """
 
 import urllib.request
+import urllib.parse
 import os
 import json
 import shutil
@@ -29,11 +31,19 @@ MECHVIBES_RAW_BASE = (
     "https://raw.githubusercontent.com/hainguyents13/mechvibes/main/src/audio"
 )
 
-# (remote_slug, yerel klasör adı) — CLI ilk çalıştırmada eksik olanları indirir
+# (remote_slug, yerel klasör adı) — CLI eksik klasörler için sırayla dener (Mechvibes GitHub)
+# Yalnızca config'te tek .ogg + [ms,ms] dilimleri olan «single» paketler.
 DEFAULT_MECHVIBES_PACKS = (
     ("cherrymx-blue-abs", "Cherry MX Blue"),
     ("cherrymx-brown-abs", "Cherry MX Brown"),
     ("cherrymx-red-abs", "Cherry MX Red"),
+    ("cherrymx-black-abs", "Cherry MX Black"),
+    ("cherrymx-blue-pbt", "Cherry MX Blue PBT"),
+    ("cherrymx-brown-pbt", "Cherry MX Brown PBT"),
+    ("cherrymx-red-pbt", "Cherry MX Red PBT"),
+    ("cherrymx-black-pbt", "Cherry MX Black PBT"),
+    ("topre-purple-hybrid-pbt", "Topre Purple Hybrid"),
+    ("eg-crystal-purple", "EG Crystal Purple"),
 )
 ASK_SYNTH = os.environ.get("MECHKEYS_ALLOW_SYNTH", "").lower() in ("1", "true", "yes")
 
@@ -174,24 +184,31 @@ def _clear_old_synthetic_clicks(sound_dir):
         pass
 
 
-def _mechvibes_pack_urls(remote_slug):
-    base = f"{MECHVIBES_RAW_BASE}/{remote_slug}"
-    return f"{base}/config.json", f"{base}/sound.ogg"
+def _mechvibes_config_url(remote_slug):
+    return f"{MECHVIBES_RAW_BASE}/{remote_slug}/config.json"
+
+
+def _mechvibes_sound_file_url(remote_slug, sound_relative):
+    """Örn. sound.ogg veya purple.ogg; alt yol varsa segment segment encode edilir."""
+    rel = (sound_relative or "sound.ogg").strip().replace("\\", "/").lstrip("/")
+    if ".." in rel or not rel.lower().endswith(".ogg"):
+        return None
+    parts = [p for p in rel.split("/") if p]
+    enc = "/".join(urllib.parse.quote(p, safe="()-_.~") for p in parts)
+    return f"{MECHVIBES_RAW_BASE}/{remote_slug}/{enc}"
 
 
 def download_mechvibes_ogg_slices(sound_dir, remote_slug="cherrymx-blue-abs", label=None):
-    """Mechvibes profili (ör. cherrymx-blue-abs): sound.ogg içinden gerçek tuş WAV üretir."""
-    cfg_url, ogg_url = _mechvibes_pack_urls(remote_slug)
+    """Mechvibes profili: config.json'daki tek OGG dosyasından [ms,ms] dilimleriyle WAV üretir."""
+    cfg_url = _mechvibes_config_url(remote_slug)
     label = label or remote_slug
     print("📥 Mechvibes %s — gerçek ses dilimleri indiriliyor…" % label)
     tmp = tempfile.mkdtemp(prefix="mechkeys_dl_")
-    ogg_path = os.path.join(tmp, "sound.ogg")
     cfg_path = os.path.join(tmp, "config.json")
     try:
         urllib.request.urlretrieve(cfg_url, cfg_path)
-        urllib.request.urlretrieve(ogg_url, ogg_path)
     except Exception as e:
-        print(f"  ⚠️  İndirme başarısız: {e}")
+        print(f"  ⚠️  config indirilemedi: {e}")
         shutil.rmtree(tmp, ignore_errors=True)
         return False
 
@@ -199,8 +216,26 @@ def download_mechvibes_ogg_slices(sound_dir, remote_slug="cherrymx-blue-abs", la
         with open(cfg_path, encoding="utf-8") as f:
             cfg = json.load(f)
         defines = cfg.get("defines") or {}
+        sound_key = (cfg.get("sound") or "sound.ogg").strip()
+        ogg_url = _mechvibes_sound_file_url(remote_slug, sound_key)
+        if ogg_url is None:
+            print(
+                "  ⚠️  Bu paket tek OGG dilimiyle uyumlu değil (sound=%r — çoklu mp3 vb.)."
+                % sound_key
+            )
+            shutil.rmtree(tmp, ignore_errors=True)
+            return False
     except Exception as e:
         print(f"  ⚠️  config.json okunamadı: {e}")
+        shutil.rmtree(tmp, ignore_errors=True)
+        return False
+
+    ogg_name = os.path.basename(sound_key.replace("\\", "/")) or "sound.ogg"
+    ogg_path = os.path.join(tmp, ogg_name)
+    try:
+        urllib.request.urlretrieve(ogg_url, ogg_path)
+    except Exception as e:
+        print(f"  ⚠️  OGG indirilemedi: {e}")
         shutil.rmtree(tmp, ignore_errors=True)
         return False
 
