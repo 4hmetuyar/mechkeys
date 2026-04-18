@@ -6,6 +6,7 @@ macOS Menubar App
 
 import hashlib
 import os
+import re
 import subprocess
 import threading
 import time
@@ -124,6 +125,59 @@ class MechKeysApp(rumps.App):
             pass
 
     @staticmethod
+    def _root_wav_basenames(base):
+        """Ses kökünde doğrudan duran .wav dosya adları."""
+        out = []
+        try:
+            for name in os.listdir(base):
+                p = os.path.join(base, name)
+                if name.startswith(".") or not os.path.isfile(p):
+                    continue
+                if name.lower().endswith(".wav"):
+                    out.append(name)
+        except OSError:
+            pass
+        return out
+
+    @staticmethod
+    def _root_pack_display_title(base, wav_basenames):
+        """
+        Kök paket menü başlığı (Ana klasör değil).
+        İsteğe bağlı: ses kökünde `.mechkeys-pack-title` dosyası — tek satır UTF-8 isim.
+        """
+        if not wav_basenames:
+            return "Sesler"
+        hint_path = os.path.join(base, ".mechkeys-pack-title")
+        try:
+            if os.path.isfile(hint_path):
+                with open(hint_path, encoding="utf-8") as f:
+                    t = f.readline().strip()
+                if t:
+                    return t[:48]
+        except Exception:
+            pass
+        lowered = [n.lower() for n in wav_basenames]
+        for prefix, label in (
+            ("mxblue_", "Cherry MX Blue"),
+            ("mxbrown_", "Cherry MX Brown"),
+            ("mxred_", "Cherry MX Red"),
+            ("mxblack_", "Cherry MX Black"),
+            ("click_", "Sentetik tıklar"),
+        ):
+            if all(x.startswith(prefix) for x in lowered):
+                return label
+        if all(re.match(r"^sound_\d+\.wav$", x) for x in lowered):
+            return "Kayıtlı tuş sesleri"
+        base0 = sorted(wav_basenames, key=lambda s: s.lower())[0]
+        stem = base0.rsplit(".", 1)[0]
+        stem = re.sub(r"_\d+$", "", stem, flags=re.I)
+        stem = re.sub(r"\d+$", "", stem)
+        stem = stem.strip("._- ")
+        if not stem:
+            return "Sesler"
+        return stem.replace("_", " ").replace("-", " ").strip().title()
+
+    @staticmethod
     def _count_wavs_in_tree(dirpath):
         n = 0
         try:
@@ -144,22 +198,14 @@ class MechKeysApp(rumps.App):
         except OSError:
             pass
 
-        root_n = 0
-        try:
-            for name in os.listdir(base):
-                p = os.path.join(base, name)
-                if name.startswith(".") or not os.path.isfile(p):
-                    continue
-                if name.lower().endswith(".wav"):
-                    root_n += 1
-        except OSError:
-            pass
+        root_names = self._root_wav_basenames(base)
+        root_n = len(root_names)
 
         if root_n > 0:
             packs.append(
                 {
                     "id": ROOT_PACK_ID,
-                    "title": "Ana klasör",
+                    "title": self._root_pack_display_title(base, root_names),
                     "path": base,
                     "count": root_n,
                 }
@@ -411,7 +457,7 @@ class MechKeysApp(rumps.App):
             pass
 
     def _wav_paths_for_pack(self, pack_id, pack_dir):
-        """Ana klasör: yalnızca doğrudan .wav; alt klasör paketleri: tüm ağaç."""
+        """Kök (__root__): yalnızca doğrudan .wav; alt klasör paketleri: tüm ağaç."""
         paths = []
         if pack_id == ROOT_PACK_ID:
             try:

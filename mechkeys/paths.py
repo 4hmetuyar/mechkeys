@@ -25,8 +25,10 @@ def get_sound_dir():
     4. site-packages kurulumu: Application Support (macOS)
     5. Paket yanında mechkeys/sounds/
 
-    Birden fazla ses seti: bu kökün altına alt klasör koyup her birine .wav
-    ekleyebilirsin; kökte doğrudan duran .wav'lar «Ana klasör» seti olur.
+    Birden fazla ses seti: kökün altına alt klasör koyup her birine .wav
+    ekleyebilirsin. Kökte doğrudan duran .wav'lar menüde dosya adlarından
+    türetilen bir başlıkla listelenir; özel isim için köke `.mechkeys-pack-title`
+    (tek satır UTF-8) koyabilirsin.
     """
     override = os.environ.get("MECHKEYS_SOUND_DIR")
     if override:
