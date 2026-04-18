@@ -4,17 +4,23 @@ MechKeys - Cherry MX Blue mechanical keyboard sound simulator
 macOS Menubar App
 """
 
-import rumps
-import pygame
-import threading
-import os
 import hashlib
+import os
+import subprocess
+import threading
+import time
+
+import pygame
+import rumps
 from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
 
 from mechkeys.paths import get_sound_dir
 
 SOUND_DIR = get_sound_dir()
+
+UD_VOLUME_PERCENT = "MechKeysVolumePercent"
+KEY_DEBOUNCE_SEC = 0.042
 
 # NSControlStateValue — menüdeki tik işareti
 try:
@@ -29,14 +35,18 @@ class MechKeysApp(rumps.App):
         super().__init__("MechKeys", title="⌨️", quit_button=None, template=None)
 
         self.enabled = True
-        self.volume = 0.8
+        self.volume = self._load_saved_volume()
         self.sounds = []
         self.listener = None
+        self._last_key_time = {}
+        self._debounce_lock = threading.Lock()
 
         self.brand_item = rumps.MenuItem("MechKeys", callback=None)
         self.tagline_item = rumps.MenuItem("Cherry MX Blue · kayıtlı sesler", callback=None)
         self.toggle_item = rumps.MenuItem("Tuş sesleri", callback=self.toggle)
         self.toggle_item.state = NSControlStateValueOn
+
+        self.status_item = rumps.MenuItem(self._status_menu_title(0), callback=None)
 
         self.vol_readout = rumps.MenuItem(self._volume_readout_title(), callback=None)
         self.vol_slider = rumps.SliderMenuItem(
@@ -48,6 +58,10 @@ class MechKeysApp(rumps.App):
         )
         self._polish_slider()
 
+        self.open_access_item = rumps.MenuItem("Erişilebilirlik ayarları…", callback=self._open_accessibility_settings)
+        self.open_listen_item = rumps.MenuItem("Giriş izleme ayarları…", callback=self._open_input_monitoring_settings)
+        self.reload_sounds_item = rumps.MenuItem("Sesleri yeniden yükle", callback=self._reload_sounds_menu)
+
         self.footer_item = rumps.MenuItem("Kaynak: Mechvibes · MIT", callback=None)
 
         self.menu = [
@@ -55,9 +69,14 @@ class MechKeysApp(rumps.App):
             self.tagline_item,
             None,
             self.toggle_item,
+            self.status_item,
             None,
             self.vol_readout,
             self.vol_slider,
+            None,
+            self.open_access_item,
+            self.open_listen_item,
+            self.reload_sounds_item,
             None,
             self.footer_item,
             None,
@@ -71,6 +90,97 @@ class MechKeysApp(rumps.App):
 
         self._load_sounds()
         self._start_listener()
+
+    @staticmethod
+    def _load_saved_volume():
+        try:
+            from Foundation import NSUserDefaults
+
+            d = NSUserDefaults.standardUserDefaults()
+            if d.objectForKey_(UD_VOLUME_PERCENT) is None:
+                return 0.8
+            v = float(d.doubleForKey_(UD_VOLUME_PERCENT)) / 100.0
+            return max(0.0, min(1.0, v))
+        except Exception:
+            return 0.8
+
+    def _save_volume_prefs(self):
+        try:
+            from Foundation import NSUserDefaults
+
+            d = NSUserDefaults.standardUserDefaults()
+            d.setDouble_forKey_(self.volume * 100.0, UD_VOLUME_PERCENT)
+            d.synchronize()
+        except Exception:
+            pass
+
+    def _status_menu_title(self, n_sounds):
+        if n_sounds <= 0:
+            return "⚠️  Ses yok — Terminal: mechkeys-download-sounds"
+        return "✓  %d ses örneği yüklü" % n_sounds
+
+    def _update_status_item(self):
+        self.status_item.title = self._status_menu_title(len(self.sounds))
+
+    @rumps.timer(0.4)
+    def _post_launch_tooltip(self, timer):
+        """Menü çubuğu ikonuna kısa açıklama (status bar button tooltip)."""
+        try:
+            self._update_status_tooltip()
+        finally:
+            try:
+                timer.stop()
+            except Exception:
+                pass
+
+    def _update_status_tooltip(self):
+        try:
+            from AppKit import NSApplication
+
+            delegate = NSApplication.sharedApplication().delegate()
+            if delegate is None or not hasattr(delegate, "nsstatusitem"):
+                return
+            item = delegate.nsstatusitem
+            btn = item.button()
+            if btn is None:
+                return
+            pct = int(round(max(0.0, min(1.0, self.volume)) * 100.0))
+            state = "Açık" if self.enabled else "Kapalı"
+            n = len(self.sounds)
+            btn.setToolTip_("MechKeys — Ses %d%% — %s — %d örnek" % (pct, state, n))
+        except Exception:
+            pass
+
+    def _open_accessibility_settings(self, _):
+        urls = (
+            "x-apple.systemsettings:com.apple.preference.security?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+        )
+        for u in urls:
+            try:
+                if subprocess.run(["open", u], capture_output=True, timeout=5).returncode == 0:
+                    return
+            except Exception:
+                continue
+
+    def _open_input_monitoring_settings(self, _):
+        urls = (
+            "x-apple.systemsettings:com.apple.preference.security?Privacy_ListenEvent",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent",
+        )
+        for u in urls:
+            try:
+                if subprocess.run(["open", u], capture_output=True, timeout=5).returncode == 0:
+                    return
+            except Exception:
+                continue
+
+    def _reload_sounds_menu(self, _):
+        self._load_sounds()
+        try:
+            rumps.notification("MechKeys", "Sesler", "%d örnek yüklendi." % len(self.sounds))
+        except Exception:
+            pass
 
     def _polish_slider(self):
         try:
@@ -136,6 +246,8 @@ class MechKeysApp(rumps.App):
             os.makedirs(SOUND_DIR)
             print(f"[MechKeys] Ses klasörü oluşturuldu: {SOUND_DIR}")
             print("[MechKeys] Lütfen Cherry MX Blue .wav dosyalarını bu klasöre ekleyin.")
+            self._update_status_item()
+            self._update_status_tooltip()
             return
 
         paths = []
@@ -156,6 +268,8 @@ class MechKeysApp(rumps.App):
                 print(f"[MechKeys] Hata ({rel}): {e}")
 
         print(f"[MechKeys] {len(self.sounds)} ses dosyası yüklendi.")
+        self._update_status_item()
+        self._update_status_tooltip()
 
     @staticmethod
     def _key_fingerprint(key):
@@ -185,9 +299,17 @@ class MechKeysApp(rumps.App):
         self.sounds[idx].play()
 
     def _on_press(self, key):
-        """Keyboard event handler."""
-        if self.enabled:
-            threading.Thread(target=self._play_sound, args=(key,), daemon=True).start()
+        """Keyboard event handler — tuş tekrarında debounce."""
+        if not self.enabled:
+            return
+        fp = self._key_fingerprint(key)
+        now = time.monotonic()
+        with self._debounce_lock:
+            last = self._last_key_time.get(fp, 0.0)
+            if now - last < KEY_DEBOUNCE_SEC:
+                return
+            self._last_key_time[fp] = now
+        threading.Thread(target=self._play_sound, args=(key,), daemon=True).start()
 
     def _start_listener(self):
         """Start global keyboard listener."""
@@ -200,6 +322,7 @@ class MechKeysApp(rumps.App):
         self.enabled = not self.enabled
         self.toggle_item.state = NSControlStateValueOn if self.enabled else NSControlStateValueOff
         self.title = "⌨️" if self.enabled else "⌨️ ⏸"
+        self._update_status_tooltip()
 
     def _volume_readout_title(self):
         v = max(0.0, min(1.0, self.volume))
@@ -224,6 +347,8 @@ class MechKeysApp(rumps.App):
             self.vol_slider.value = self.volume * 100.0
         if hasattr(self, "vol_readout"):
             self.vol_readout.title = self._volume_readout_title()
+        self._save_volume_prefs()
+        self._update_status_tooltip()
 
     def quit_app(self, _):
         if self.listener:

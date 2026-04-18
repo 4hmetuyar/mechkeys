@@ -42,6 +42,8 @@ python3 run.py
 # veya (kurulum sonrası): mechkeys
 ```
 
+**Uygulama içi:** Menüde kaç ses yüklendiği; **Erişilebilirlik** / **Giriş izleme** için Sistem Ayarları kısayolu; **Sesleri yeniden yükle**; ses seviyesi **UserDefaults** ile hatırlanır; tuş **tekrarında debounce** (basılı tutunca makineli tık azalır); menü çubuğu ikonunda **tooltip**.
+
 **Not:** Kökte `sounds/*.wav` yoksa `download_sounds.py` ağından indirmeyi dener; başarısız olursa [DISTRIBUTING.md](DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
 
 ### Yerel çalıştırma seçenekleri
