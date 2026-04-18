@@ -1,6 +1,8 @@
 # Dağıtım rehberi (GitHub Releases, zip/DMG, Gatekeeper)
 
-Bu belge, MechKeys’i **App Store olmadan** paylaşmak için pratik adımları özetler: derleme, arşiv, GitHub Release ve kullanıcıların Gatekeeper ile ilk açılışı.
+Bu belge `docs/DISTRIBUTING.md` altındadır; komutlarda geçen `./scripts/` vb. yollar **depo kökünden** çalıştırılmalıdır.
+
+MechKeys’i **App Store olmadan** paylaşmak için pratik adımlar: derleme, arşiv, GitHub Release ve Gatekeeper ile ilk açılış.
 
 ---
 

@@ -6,7 +6,7 @@ macOS menü çubuğunda çalışan, tuş basışlarında **Cherry MX Blue** tarz
 |---|---|
 | **Depo** | [github.com/4hmetuyar/mechkeys](https://github.com/4hmetuyar/mechkeys) |
 | **Hazır sürüm** | [Releases](https://github.com/4hmetuyar/mechkeys/releases) (`.dmg` / `.zip`) |
-| **Dağıtım / CI / Gatekeeper** | [DISTRIBUTING.md](DISTRIBUTING.md) |
+| **Dağıtım / CI / Gatekeeper** | [docs/DISTRIBUTING.md](docs/DISTRIBUTING.md) |
 | **Lisans** | MIT — `LICENSE` · ses kaynağı uygulama içi footer’da |
 
 ---
@@ -44,7 +44,7 @@ python3 run.py
 
 **Uygulama içi:** Menüde kaç ses yüklendiği; **Ses seti** alt menüsünden klasör/paket seçimi (tercih kaydedilir); **Erişilebilirlik** / **Giriş izleme** için Sistem Ayarları kısayolu; **Sesleri yeniden yükle**; ses seviyesi **UserDefaults** ile hatırlanır; tuş **tekrarında debounce** (basılı tutunca makineli tık azalır); menü çubuğu ikonunda **tooltip**.
 
-**Not:** `mechkeys-download-sounds` Mechvibes’tan (GitHub) **bir dizi** Cherry / Topre / EG tek-OGG paketini ses kökünün **alt klasörlerine** indirir; dolu klasör atlanır. Elle de `sounds/<set_adı>/*.wav` kullanabilirsin. Kökte hiç WAV yoksa indirme dener; başarısız olursa [DISTRIBUTING.md](DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
+**Not:** `mechkeys-download-sounds` Mechvibes’tan (GitHub) **bir dizi** Cherry / Topre / EG tek-OGG paketini ses kökünün **alt klasörlerine** indirir; dolu klasör atlanır. Elle de `sounds/<set_adı>/*.wav` kullanabilirsin. Kökte hiç WAV yoksa indirme dener; başarısız olursa [docs/DISTRIBUTING.md](docs/DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
 
 ### Yerel çalıştırma seçenekleri
 
@@ -70,11 +70,11 @@ Tuş dinlemek için **Erişilebilirlik** (ve bazı sürümlerde **Giriş İzleme
 
 | Ne | Nasıl |
 |----|--------|
-| `.app` + `.zip` + `.dmg` | `./scripts/build_macos_release.sh` — ayrıntı [DISTRIBUTING.md](DISTRIBUTING.md) |
+| `.app` + `.zip` + `.dmg` | `./scripts/build_macos_release.sh` — ayrıntı [docs/DISTRIBUTING.md](docs/DISTRIBUTING.md) |
 | GitHub Release otomatik | `git tag v1.0.0 && git push origin v1.0.0` → Actions (depoda **Workflow permissions: Read and write** açık olmalı) |
 | Depoyu güncelleme | `git pull origin main` |
 
-PyInstaller tek satır örneği ve imzalama / notarize tam metni **DISTRIBUTING.md** içinde.
+PyInstaller tek satır örneği ve imzalama / notarize tam metni **docs/DISTRIBUTING.md** içinde.
 
 ### Proje yapısı
 
@@ -85,17 +85,20 @@ mechkeys/                    # Python paketi
   app.py                     # rumps menü + pygame + pynput
   download_sounds.py         # Mechvibes OGG → WAV
   paths.py                   # ses klasörü çözümü (dev / pip / PyInstaller)
-run.py                       # kök giriş noktası
-download_sounds.py           # kök → paket içi script
+docs/
+  DISTRIBUTING.md            # Release, zip/DMG, Gatekeeper, imzalama
+packaging/macos/
+  com.mechkeys.app.plist     # LaunchAgent örneği (ProgramArguments → which mechkeys)
+run.py                       # kök giriş noktası (PyInstaller da bunu kullanır)
+download_sounds.py           # kök shim → mechkeys.download_sounds
 scripts/build_macos_release.sh
+.github/workflows/release-macos.yml
 pyproject.toml
 setup.py
 requirements.txt
-.github/workflows/release-macos.yml
-com.mechkeys.app.plist       # LaunchAgent örneği (yol: which mechkeys)
-sounds/                      # geliştirmede WAV (commit’lenebilir veya .gitignore ile hariç)
+sounds/                      # geliştirmede WAV (isteğe bağlı; .gitignore ile hariç tutulabilir)
 LICENSE
-DISTRIBUTING.md
+README.md
 ```
 
 ### Sorun giderme (kısa)
@@ -124,10 +127,10 @@ DISTRIBUTING.md
 
 ## Girişte otomatik başlatma
 
-`com.mechkeys.app.plist` içindeki `ProgramArguments` yolunu `which mechkeys` ile güncelle; sonra:
+`packaging/macos/com.mechkeys.app.plist` içindeki `ProgramArguments` yolunu `which mechkeys` ile güncelle; sonra:
 
 ```bash
-cp com.mechkeys.app.plist ~/Library/LaunchAgents/
+cp packaging/macos/com.mechkeys.app.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.mechkeys.app.plist
 ```
 
