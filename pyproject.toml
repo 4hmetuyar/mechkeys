@@ -26,6 +26,9 @@ dependencies = [
   "pygame>=2.5.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/4hmetuyar/mechkeys"
+
 [project.scripts]
 mechkeys = "mechkeys.app:main"
 mechkeys-download-sounds = "mechkeys.download_sounds:main"
