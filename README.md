@@ -10,16 +10,24 @@ macOS menü çubuğunda çalışan Cherry MX Blue tarzı tuş sesleri. Sesler [M
 
 ## Son kullanıcı: Uygulamayı nasıl indiririm?
 
-### Hazır uygulama (.app zip) — önerilen
+### Hazır uygulama — tek dosya (.dmg) veya zip
+
+macOS’ta kurulu uygulama aslında **`MechKeys.app`** adlı tek bir pakettir (Finder’da bir simge gibi görünür). İndirmek için en pratik **tek dosya** genelde **`.dmg`** disk görüntüsüdür (Chrome, Slack vb. dağıtımına benzer).
+
+**DMG ile (önerilen — tek indirme dosyası):**
 
 1. **[Releases](https://github.com/4hmetuyar/mechkeys/releases)** sayfasını aç.
-2. En son sürümdeki **`MechKeys-macos-arm64.zip`** (M1/M2/M3) veya **`MechKeys-macos-x86_64.zip`** (Intel) dosyasını indir.
-3. Zip’i çift tıklayıp aç → **`MechKeys.app`**’i **Uygulamalar** klasörüne taşı.
-4. **İlk çalıştırma:** `MechKeys`’e **Sağ tık (veya Control+tık) → Aç** de; uyarıda yine **Aç**’ı seç (Gatekeeper).
-5. **Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik** (gerekirse **Giriş İzleme**) içinde MechKeys’e izin ver; yoksa tuş sesi çalmaz.
+2. **`MechKeys-macos-arm64.dmg`** (Apple Silicon) veya **`MechKeys-macos-x86_64.dmg`** (Intel) indir.
+3. DMG’ye çift tıkla → açılan pencerede **`MechKeys.app`**’i **Uygulamalar**’a sürükle.
+4. **İlk çalıştırma:** `MechKeys`’e **Sağ tık → Aç** → *Aç* (Gatekeeper).
+5. **Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik** (gerekirse **Giriş İzleme**) içinde MechKeys’e izin ver.
 
-> Yeşil **Code → Download ZIP** yalnızca **kaynak kod**dur; çalışan uygulama için **Releases** altındaki zip gerekir.  
-> Henüz Release yoksa geliştirici [DISTRIBUTING.md](DISTRIBUTING.md) ile zip üretip Release’e yüklemeli veya `v1.0.0` gibi etiket iterek GitHub Actions’ı tetiklemeli.
+**Zip ile:** Aynı Releases sayfasındaki **`MechKeys-macos-*.zip`** dosyasını indir; zip’ten `.app`’i çıkarıp Uygulamalar’a taşı; yine **Sağ tık → Aç** kullan.
+
+> Yeşil **Code → Download ZIP** yalnızca **kaynak kod**dur. Çalışan uygulama için **Releases** altındaki **.dmg** veya **.zip** gerekir.  
+> Henüz Release yoksa geliştirici [DISTRIBUTING.md](DISTRIBUTING.md) ile derleyip yüklemeli veya `v1.0.0` etiketiyle Actions’ı tetiklemeli.
+
+**Neden Windows’taki gibi tek `.exe` yok?** macOS menü çubuğu uygulamaları resmi olarak **`.app` paketi** olarak dağıtılır; PyInstaller’ın “tek dosya exe” modu bu tür uygulamalarda menü çubuğu / imzalama ile uyumsuz olabiliyor. Kullanıcıya **tek indirilebilir arşiv** sunmak için **`.dmg`** standart çözümdür.
 
 ### Python kullananlar (Terminal)
 

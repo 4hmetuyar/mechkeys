@@ -39,8 +39,8 @@ gh repo create mechkeys --public --source=. --remote=origin --push
 | Çıktı | Açıklama |
 |--------|-----------|
 | `dist/MechKeys.app` | macOS uygulama paketi |
-| `dist/MechKeys-macos-arm64.zip` (veya `x86_64`) | Paylaşım için zip (önerilen) |
-| `dist/MechKeys-macos-*.dmg` | İsteğe bağlı; `CREATE_DMG=1` ile |
+| `dist/MechKeys-macos-*.dmg` | **Tek indirilebilir dosya** (diğer Mac uygulamalarındaki gibi) |
+| `dist/MechKeys-macos-*.zip` | Aynı `.app`’in sıkıştırılmış hâli (alternatif) |
 
 Ses dosyaları: Derleme sırasında kökte `sounds/*.wav` varsa PyInstaller bunları `.app` içine gömer. Yoksa kullanıcı ilk açılışta terminalden `mechkeys-download-sounds` çalıştıramaz (paket dışında); bu durumda uygulama sesleri `~/Library/Application Support/MechKeys/sounds` altına indirmek için **kaynak kurulum** veya elle kopyalama gerekir. **Release öncesi** `python3 download_sounds.py` çalıştırıp tekrar derlemen önerilir.
 
@@ -54,13 +54,13 @@ chmod +x scripts/build_macos_release.sh
 ./scripts/build_macos_release.sh
 ```
 
-İsteğe bağlı DMG:
+DMG üretmek istemezsen:
 
 ```bash
-CREATE_DMG=1 ./scripts/build_macos_release.sh
+SKIP_DMG=1 ./scripts/build_macos_release.sh
 ```
 
-Çıktı: `dist/MechKeys-macos-$(uname -m).zip`
+Çıktı: `dist/` altında `MechKeys.app`, `MechKeys-macos-*.zip` ve (varsayılan) **`MechKeys-macos-*.dmg`**. `SKIP_DMG=1` ise yalnızca zip üretilir.
 
 ---
 
@@ -75,7 +75,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-4. `.github/workflows/release-macos.yml` tetiklenir; işlem bitince **Releases** sayfasında `v1.0.0` altında zip dosyası görünür.
+4. `.github/workflows/release-macos.yml` tetiklenir; işlem bitince **Releases** sayfasında `v1.0.0` altında **`.zip`** ve **`.dmg`** dosyaları görünür.
 
 **Not:** İlk kez kullanıyorsan `Settings → Actions → General` altında iş akışı yazma izninin açık olduğundan emin ol.
 
@@ -85,7 +85,7 @@ git push origin v1.0.0
 
 1. **Releases → Draft a new release**
 2. **Choose a tag** ile `v1.0.0` oluştur
-3. Yerelde ürettiğin `MechKeys-macos-*.zip` dosyasını **Attach binaries** ile yükle
+3. Yerelde ürettiğin `MechKeys-macos-*.dmg` ve/veya `*.zip` dosyalarını **Attach binaries** ile yükle
 4. Kısa sürüm notu yaz (ör. “İlk sürüm, macOS 13+”)
 
 ---

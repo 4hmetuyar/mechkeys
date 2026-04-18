@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Yerel veya CI: PyInstaller ile MechKeys.app + zip (+ isteğe bağlı DMG)
+# PyInstaller → MechKeys.app + zip + DMG (tek indirilebilir dosya: .dmg)
+# DMG istemezsen: SKIP_DMG=1 ./scripts/build_macos_release.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -46,8 +47,8 @@ rm -f "${OUT_NAME}.zip"
 ditto -c -k --keepParent MechKeys.app "${OUT_NAME}.zip"
 echo "    ${DIST}/${OUT_NAME}.zip"
 
-if [[ "${CREATE_DMG:-}" == "1" ]]; then
-  echo "==> DMG"
+if [[ "${SKIP_DMG:-}" != "1" ]]; then
+  echo "==> DMG (tek dosya dağıtımı — diğer uygulamalardaki .dmg gibi)"
   rm -f "${OUT_NAME}.dmg"
   hdiutil create -volname "MechKeys" -srcfolder MechKeys.app -ov -format UDZO \
     -imagekey zlib-level=9 "${OUT_NAME}.dmg"
