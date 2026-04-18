@@ -8,6 +8,31 @@ macOS menü çubuğunda çalışan Cherry MX Blue tarzı tuş sesleri. Sesler [M
 
 ---
 
+## Son kullanıcı: Uygulamayı nasıl indiririm?
+
+### Hazır uygulama (.app zip) — önerilen
+
+1. **[Releases](https://github.com/4hmetuyar/mechkeys/releases)** sayfasını aç.
+2. En son sürümdeki **`MechKeys-macos-arm64.zip`** (M1/M2/M3) veya **`MechKeys-macos-x86_64.zip`** (Intel) dosyasını indir.
+3. Zip’i çift tıklayıp aç → **`MechKeys.app`**’i **Uygulamalar** klasörüne taşı.
+4. **İlk çalıştırma:** `MechKeys`’e **Sağ tık (veya Control+tık) → Aç** de; uyarıda yine **Aç**’ı seç (Gatekeeper).
+5. **Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik** (gerekirse **Giriş İzleme**) içinde MechKeys’e izin ver; yoksa tuş sesi çalmaz.
+
+> Yeşil **Code → Download ZIP** yalnızca **kaynak kod**dur; çalışan uygulama için **Releases** altındaki zip gerekir.  
+> Henüz Release yoksa geliştirici [DISTRIBUTING.md](DISTRIBUTING.md) ile zip üretip Release’e yüklemeli veya `v1.0.0` gibi etiket iterek GitHub Actions’ı tetiklemeli.
+
+### Python kullananlar (Terminal)
+
+```bash
+pip3 install "git+https://github.com/4hmetuyar/mechkeys.git"
+mechkeys-download-sounds
+mechkeys
+```
+
+Sesler varsayılan olarak `~/Library/Application Support/MechKeys/sounds` içine kurulur (veya `MECHKEYS_SOUND_DIR` ile özelleştirilir).
+
+---
+
 ## Paylaşmak için seçenekler
 
 ### A) GitHub / zip ile kaynak
