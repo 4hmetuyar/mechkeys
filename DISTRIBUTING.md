@@ -4,6 +4,36 @@ Bu belge, MechKeys’i **App Store olmadan** paylaşmak için pratik adımları 
 
 ---
 
+## 0. Projeyi GitHub’a ilk kez gönderme
+
+Bu klasörde `git init` ve ilk commit hazır olabilir. Kalan adımlar:
+
+### A) GitHub web arayüzü
+
+1. [github.com/new](https://github.com/new) → Repository adı (ör. `mechkeys`) → **Public** → README / .gitignore **ekleme** (boş depo).
+2. Aşağıdaki komutlarda `KULLANICI` ve `REPO` değerlerini kendi hesabınla değiştir:
+
+```bash
+cd /path/to/mechkeys
+git remote add origin https://github.com/KULLANICI/REPO.git
+git branch -M main
+git push -u origin main
+```
+
+SSH kullanıyorsan: `git@github.com:KULLANICI/REPO.git`
+
+### B) GitHub CLI (`gh`)
+
+```bash
+gh auth login
+cd /path/to/mechkeys
+gh repo create mechkeys --public --source=. --remote=origin --push
+```
+
+İsim çakışırsa `--public` yanına farklı bir depo adı ver.
+
+---
+
 ## 1. Ne üreteceksin?
 
 | Çıktı | Açıklama |

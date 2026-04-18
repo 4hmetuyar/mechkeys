@@ -2,7 +2,7 @@
 
 macOS menü çubuğunda çalışan Cherry MX Blue tarzı tuş sesleri. Sesler [Mechvibes](https://github.com/hainguyents13/mechvibes) açık kaynak paketinden türetilmiştir.
 
-**GitHub Releases / zip / DMG / Gatekeeper** adımları için ayrıntılı rehber: [DISTRIBUTING.md](DISTRIBUTING.md)
+**GitHub’a ilk push** ve **Releases / zip / Gatekeeper**: [DISTRIBUTING.md](DISTRIBUTING.md) (bölüm 0 ve sonrası)
 
 ---
 
