@@ -1,137 +1,128 @@
 # MechKeys
 
-macOS menü çubuğunda çalışan Cherry MX Blue tarzı tuş sesleri. Sesler [Mechvibes](https://github.com/hainguyents13/mechvibes) açık kaynak paketinden türetilmiştir.
+macOS menü çubuğunda çalışan, tuş basışlarında **Cherry MX Blue** tarzı ses çalan küçük uygulama. Ses örnekleri [Mechvibes](https://github.com/hainguyents13/mechvibes) açık kaynak paketinden üretilir.
 
-**Depo:** [github.com/4hmetuyar/mechkeys](https://github.com/4hmetuyar/mechkeys)
-
-**GitHub’a ilk push** ve **Releases / zip / Gatekeeper**: [DISTRIBUTING.md](DISTRIBUTING.md) (bölüm 0 ve sonrası)
-
----
-
-## Son kullanıcı: Uygulamayı nasıl indiririm?
-
-### Hazır uygulama — tek dosya (.dmg) veya zip
-
-macOS’ta kurulu uygulama aslında **`MechKeys.app`** adlı tek bir pakettir (Finder’da bir simge gibi görünür). İndirmek için en pratik **tek dosya** genelde **`.dmg`** disk görüntüsüdür (Chrome, Slack vb. dağıtımına benzer).
-
-**DMG ile (önerilen — tek indirme dosyası):**
-
-1. **[Releases](https://github.com/4hmetuyar/mechkeys/releases)** sayfasını aç.
-2. **`MechKeys-macos-arm64.dmg`** (Apple Silicon) veya **`MechKeys-macos-x86_64.dmg`** (Intel) indir.
-3. DMG’ye çift tıkla → açılan pencerede **`MechKeys.app`**’i **Uygulamalar**’a sürükle.
-4. **İlk çalıştırma:** `MechKeys`’e **Sağ tık → Aç** → *Aç* (Gatekeeper).
-5. **Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik** (gerekirse **Giriş İzleme**) içinde MechKeys’e izin ver.
-
-**Zip ile:** Aynı Releases sayfasındaki **`MechKeys-macos-*.zip`** dosyasını indir; zip’ten `.app`’i çıkarıp Uygulamalar’a taşı; yine **Sağ tık → Aç** kullan.
-
-> Yeşil **Code → Download ZIP** yalnızca **kaynak kod**dur. Çalışan uygulama için **Releases** altındaki **.dmg** veya **.zip** gerekir.  
-> Henüz Release yoksa geliştirici [DISTRIBUTING.md](DISTRIBUTING.md) ile derleyip yüklemeli veya `v1.0.0` etiketiyle Actions’ı tetiklemeli.
-
-**Neden Windows’taki gibi tek `.exe` yok?** macOS menü çubuğu uygulamaları resmi olarak **`.app` paketi** olarak dağıtılır; PyInstaller’ın “tek dosya exe” modu bu tür uygulamalarda menü çubuğu / imzalama ile uyumsuz olabiliyor. Kullanıcıya **tek indirilebilir arşiv** sunmak için **`.dmg`** standart çözümdür.
-
-### Python kullananlar (Terminal)
-
-```bash
-pip3 install "git+https://github.com/4hmetuyar/mechkeys.git"
-mechkeys-download-sounds
-mechkeys
-```
-
-Sesler varsayılan olarak `~/Library/Application Support/MechKeys/sounds` içine kurulur (veya `MECHKEYS_SOUND_DIR` ile özelleştirilir).
+| | |
+|---|---|
+| **Depo** | [github.com/4hmetuyar/mechkeys](https://github.com/4hmetuyar/mechkeys) |
+| **Hazır sürüm** | [Releases](https://github.com/4hmetuyar/mechkeys/releases) (`.dmg` / `.zip`) |
+| **Dağıtım / CI / Gatekeeper** | [DISTRIBUTING.md](DISTRIBUTING.md) |
+| **Lisans** | MIT — `LICENSE` · ses kaynağı uygulama içi footer’da |
 
 ---
 
-## Paylaşmak için seçenekler
+## Geliştiriciler için
 
-### A) GitHub / zip ile kaynak
+Bu bölüm dışarıdan klonlayıp katkı verecek veya yerelde çalıştıracak kişiler içindir.
 
-1. Bu klasörü zip’leyip veya bir Git deposuna itin.
-2. Arkadaşın şu komutlarla kurar:
+### Gereksinimler
+
+- **macOS** (menü çubuğu + `rumps` / `AppKit`)
+- **Python 3.9+**
+- Bağımlılıklar: `rumps`, `pynput`, `pygame` — sürümler `pyproject.toml` ve `requirements.txt` içinde
+
+### Hızlı başlangıç
 
 ```bash
+git clone https://github.com/4hmetuyar/mechkeys.git
 cd mechkeys
-python3 -m venv .venv && source .venv/bin/activate
+
+python3 -m venv .venv
+source .venv/bin/activate          # Windows değil; macOS/Linux: source
+
+pip install --upgrade pip setuptools wheel
 pip install -e .
-mechkeys-download-sounds
-mechkeys
-```
 
-Alternatif çalıştırma (venv’siz, klasör kökündeyken):
-
-```bash
-pip install -r requirements.txt
+# Ses WAV’ları (Mechvibes GitHub → yerel sounds/ veya Application Support)
 python3 download_sounds.py
+
+# Uygulamayı çalıştır
 python3 run.py
+# veya: python3 -m mechkeys
+# veya (kurulum sonrası): mechkeys
 ```
 
-veya:
+**Not:** Kökte `sounds/*.wav` yoksa `download_sounds.py` ağından indirmeyi dener; başarısız olursa [DISTRIBUTING.md](DISTRIBUTING.md) içindeki ağ / ffmpeg notlarına bak.
 
-```bash
-python3 -m mechkeys
+### Yerel çalıştırma seçenekleri
+
+| Yöntem | Komut |
+|--------|--------|
+| Kök giriş | `python3 run.py` |
+| Paket modülü | `python3 -m mechkeys` |
+| `pip install -e .` sonrası | `mechkeys` |
+| Ses kurulumu CLI | `mechkeys-download-sounds` veya `python3 download_sounds.py` |
+
+### Ortam değişkeni
+
+| Değişken | Anlamı |
+|----------|--------|
+| `MECHKEYS_SOUND_DIR` | WAV klasörünü zorla (mutlak yol). Yoksa: önce kök `sounds/`, PyInstaller paketinde gömülü `sounds/`, pip kurulumunda `~/Library/Application Support/MechKeys/sounds` — ayrıntı `mechkeys/paths.py`. |
+| `MECHKEYS_ALLOW_SYNTH` | `1` ise `download_sounds.py` gerçek paket başarısız olunca sentetik tık üretir (varsayılan kapalı). |
+
+### macOS izinleri (geliştirme)
+
+Tuş dinlemek için **Erişilebilirlik** (ve bazı sürümlerde **Giriş İzleme / Input Monitoring**) içinde **Terminal**, **iTerm** veya çalıştırdığın **Python / PyInstaller `.app`** işaretlenmeli. Aksi halde ses veya dinleyici çalışmaz.
+
+### Dağıtım özeti
+
+| Ne | Nasıl |
+|----|--------|
+| `.app` + `.zip` + `.dmg` | `./scripts/build_macos_release.sh` — ayrıntı [DISTRIBUTING.md](DISTRIBUTING.md) |
+| GitHub Release otomatik | `git tag v1.0.0 && git push origin v1.0.0` → Actions (depoda **Workflow permissions: Read and write** açık olmalı) |
+| Depoyu güncelleme | `git pull origin main` |
+
+PyInstaller tek satır örneği ve imzalama / notarize tam metni **DISTRIBUTING.md** içinde.
+
+### Proje yapısı
+
+```
+mechkeys/                    # Python paketi
+  __init__.py                # sürüm
+  __main__.py                # python -m mechkeys
+  app.py                     # rumps menü + pygame + pynput
+  download_sounds.py         # Mechvibes OGG → WAV
+  paths.py                   # ses klasörü çözümü (dev / pip / PyInstaller)
+run.py                       # kök giriş noktası
+download_sounds.py           # kök → paket içi script
+scripts/build_macos_release.sh
+pyproject.toml
+setup.py
+requirements.txt
+.github/workflows/release-macos.yml
+com.mechkeys.app.plist       # LaunchAgent örneği (yol: which mechkeys)
+sounds/                      # geliştirmede WAV (commit’lenebilir veya .gitignore ile hariç)
+LICENSE
+DISTRIBUTING.md
 ```
 
-### B) `pip` ile kurulabilir paket (aynı makinede veya özel indeks)
+### Sorun giderme (kısa)
 
-Klasör kökünde:
-
-```bash
-pip install .
-# veya geliştirme: pip install -e .
-```
-
-Ortaya çıkan komutlar:
-
-| Komut | Açıklama |
-|--------|----------|
-| `mechkeys` | Uygulamayı başlatır |
-| `mechkeys-download-sounds` | Mechvibes seslerini indirip WAV üretir |
-
-`pip install` sonrası ses klasörü varsayılan olarak:
-
-`~/Library/Application Support/MechKeys/sounds`
-
-Özel klasör için: `export MECHKEYS_SOUND_DIR=/yol/istediğin/sounds`
-
-Kaynak ağacında kök `sounds/` içinde zaten `.wav` varsa, geliştirme sırasında otomatik olarak o klasör kullanılır.
-
-### C) Çift tıklanabilir `.app` (PyInstaller)
-
-```bash
-pip install pyinstaller
-pyinstaller --windowed --name MechKeys --osx-bundle-identifier com.mechkeys.app \
-  --collect-submodules pygame --hidden-import AppKit --hidden-import Foundation \
-  --noconfirm run.py
-```
-
-Çıktı: `dist/MechKeys.app` — Finder’da açılabilir.
-
-İlk seferde yine `mechkeys-download-sounds` çalıştırıp sesleri `Application Support` altına (veya `MECHKEYS_SOUND_DIR`) üretmek gerekir.
-
-Not: PyInstaller paketi imzalamaz; başka Mac’te **Sağ tık → Aç** veya Gatekeeper ayarları gerekebilir.
-
-**Eski `pip` ile düzenlenebilir kurulum** (`pip install -e .`) hata verirse: `pip install --upgrade pip setuptools` veya doğrudan `pip install .` kullan.
+| Sorun | Kontrol |
+|-------|---------|
+| Ses yok | `sounds/` içinde `.wav` var mı? `python3 download_sounds.py` · Erişilebilirlik / Giriş İzleme |
+| `import mechkeys` hatası | Kökte `mechkeys.py` dosyası **yok**; paket klasörü `mechkeys/`. Her zaman repo kökünden çalış veya `pip install -e .` |
+| `pip install -e .` hata | `pip install --upgrade pip setuptools` sonra `pip install .` dene |
+| PyInstaller | `scripts/build_macos_release.sh` önerilir; sesler için kök `sounds/*.wav` veya gömülü data |
 
 ---
 
-## Gereksinimler
+## Son kullanıcı (derlenmiş uygulama)
 
-- macOS
-- Python 3.9+
-- Bağımlılıklar: `rumps`, `pynput`, `pygame` (`pyproject.toml` veya `requirements.txt`)
+1. **[Releases](https://github.com/4hmetuyar/mechkeys/releases)** → **`MechKeys-macos-*.dmg`** (tercih) veya **`.zip`** indir.  
+2. DMG: aç → `MechKeys.app` → **Uygulamalar**’a sürükle.  
+3. İlk açılış: **Sağ tık → Aç** (Gatekeeper).  
+4. **Erişilebilirlik** (ve gerekirse **Giriş İzleme**) izni ver.
 
----
+**Code → Download ZIP** yalnızca kaynak koddur; çalışan paket için **Releases** gerekir. Tek indirilebilir dosya için **`.dmg`** kullanılır (Windows `.exe` eşdeğeri değildir; macOS’ta `.app` + dağıtım için `.dmg` standarttır).
 
-## macOS izinleri
-
-1. **Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik**  
-   Terminal, iTerm veya kullandığın Python / `MechKeys.app` için izin açık olmalı.
-2. Bazı sürümlerde ayrıca **Giriş İzleme (Input Monitoring)** gerekir.
+**Sadece pip ile kurulum:** `pip3 install "git+https://github.com/4hmetuyar/mechkeys.git"` → `mechkeys-download-sounds` → `mechkeys`
 
 ---
 
-## Girişte otomatik başlatma (LaunchAgent)
+## Girişte otomatik başlatma
 
-`com.mechkeys.app.plist` içindeki `mechkeys` yolunu kendi makinede `which mechkeys` çıktısıyla değiştir; sonra:
+`com.mechkeys.app.plist` içindeki `ProgramArguments` yolunu `which mechkeys` ile güncelle; sonra:
 
 ```bash
 cp com.mechkeys.app.plist ~/Library/LaunchAgents/
@@ -140,53 +131,12 @@ launchctl load ~/Library/LaunchAgents/com.mechkeys.app.plist
 
 ---
 
-## Proje yapısı
+## Mac App Store
 
-```
-mechkeys/                 # Python paketi
-  __init__.py
-  __main__.py             # python -m mechkeys
-  app.py                  # Menü çubuğu uygulaması
-  download_sounds.py      # Ses kurulumu
-  paths.py                # Ses klasörü konumu
-run.py                    # python3 run.py
-download_sounds.py        # kök sarmalayıcı → paket
-pyproject.toml            # pip / setuptools
-setup.py                  # eski pip uyumluluğu
-scripts/build_macos_release.sh  # .app + zip (ve isteğe DMG)
-DISTRIBUTING.md           # GitHub Release, Gatekeeper, notarize
-.github/workflows/       # Etiket itilince otomatik derleme
-sounds/                   # WAV’lar (geliştirmede kökte olabilir)
-LICENSE
-```
-
----
-
-## Sorun giderme
-
-- **Ses yok:** `mechkeys-download-sounds` çalıştır; Erişilebilirlik / Giriş İzleme izinlerini kontrol et.
-- **Import hatası:** Proje kökünden `pip install -e .` veya `PYTHONPATH=.` kullanma; mümkünse her zaman kurulum yap.
-
----
-
-## Mac App Store’a koyabilir miyim?
-
-**Kısa cevap:** Bu proje türüyle (tüm sistemde tuş dinleme + `pynput`) App Store’a girmek **fiilen çok zor ve çoğu senaryoda mümkün değil**.
-
-**Neden:**
-
-1. **App Sandbox zorunluluğu** — Mac App Store’a giren uygulamalar [App Sandbox](https://developer.apple.com/documentation/security/app_sandbox) ile sınırlandırılır. Tüm uygulamalarda tuş vuruşlarını dinlemek, sandbox’ın tipik izin modeliyle çakışır; “giriş izleme” benzeri yetenekler için özel entitlement gerekir ve Apple [İnceleme Kuralları](https://developer.apple.com/app-store/review/guidelines/) kapsamında bu tür uygulamaları **reddetme veya ek süreç** ile değerlendirme eğilimindedir (özellikle klavye genel dinleme / güvenlik algısı).
-2. **Teknik yığın** — Python + PyInstaller/rumps ile üretilen `.app`’i Store’a vermek için yine de **Xcode arşivi**, **kod imzalama**, **App Store provisioning**, metadata ve inceleme süreci gerekir; sandbox’a uymayan davranış varsa süreç biter.
-
-**Pratik alternatif (çoğu benzer uygulamanın yaptığı):**
-
-- [Apple Developer Program](https://developer.apple.com/programs/) ($/yıl) ile **Developer ID** imzalama + [notarization](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)  
-- Dağıtım: **kendi siten**, [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases), Setapp vb. — kullanıcı **Sağ tık → Aç** veya Güvenlik ayarlarıyla ilk açılışı onaylar.
-
-App Store’a özellikle girmek istiyorsan: davranışı sandbox kurallarına uyacak şekilde **yeniden tasarlamak** (ör. yalnızca kendi pencerende tuş, veya Apple’ın izin verdiği resmi API’lerle sınırlı kullanım) ve büyük olasılıkla **Swift/Objective-C + AppKit** ile native uygulama gerekir; mevcut MechKeys mimarisi doğrudan “Store’a yükle” ile uyumlu değildir.
+Bu mimari (global tuş dinleme, `pynput`) **App Store sandbox** ile genelde uyumlu değildir; dağıtım **Developer ID + notarize** veya **Releases / kendi siten** ile yapılır. Kısa gerekçe: [App Sandbox](https://developer.apple.com/documentation/security/app_sandbox), [Review Guidelines](https://developer.apple.com/app-store/review/guidelines/).
 
 ---
 
 ## Lisans
 
-MIT — ayrıntı `LICENSE` dosyasında. Ses içeriği Mechvibes projesine dayanır; uygulama içi footer’da da belirtilir.
+MIT — `LICENSE`. Ses içeriği Mechvibes kaynaklıdır.
