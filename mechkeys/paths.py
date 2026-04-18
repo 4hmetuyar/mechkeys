@@ -24,6 +24,9 @@ def get_sound_dir():
     3. Repo kökündeki sounds/ (mevcut WAV varsa; geliştirme)
     4. site-packages kurulumu: Application Support (macOS)
     5. Paket yanında mechkeys/sounds/
+
+    Birden fazla ses seti: bu kökün altına alt klasör koyup her birine .wav
+    ekleyebilirsin; kökte doğrudan duran .wav'lar «Ana klasör» seti olur.
     """
     override = os.environ.get("MECHKEYS_SOUND_DIR")
     if override:

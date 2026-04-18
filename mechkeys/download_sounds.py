@@ -24,9 +24,16 @@ SOUND_DIR = get_sound_dir()
 
 PACK_URL = "https://github.com/hainguyents13/mechvibes/raw/master/public/audio/cherry-mx-blue.zip"
 
-# Mechvibes: CherryMX Blue ABS (kayıtlı gerçek tuş sesleri, tek OGG içinde)
-MECHVIBES_BLUE_ABS_BASE = (
-    "https://raw.githubusercontent.com/hainguyents13/mechvibes/main/src/audio/cherrymx-blue-abs"
+# Mechvibes: her klasör sound.ogg + config.json (raw GitHub)
+MECHVIBES_RAW_BASE = (
+    "https://raw.githubusercontent.com/hainguyents13/mechvibes/main/src/audio"
+)
+
+# (remote_slug, yerel klasör adı) — CLI ilk çalıştırmada eksik olanları indirir
+DEFAULT_MECHVIBES_PACKS = (
+    ("cherrymx-blue-abs", "Cherry MX Blue"),
+    ("cherrymx-brown-abs", "Cherry MX Brown"),
+    ("cherrymx-red-abs", "Cherry MX Red"),
 )
 ASK_SYNTH = os.environ.get("MECHKEYS_ALLOW_SYNTH", "").lower() in ("1", "true", "yes")
 
@@ -125,7 +132,7 @@ def _slice_ogg_with_ffmpeg(ogg_path, sound_dir, segments, sample_rate=44100):
     os.makedirs(sound_dir, exist_ok=True)
     made = 0
     for idx, (off_ms, dur_ms) in enumerate(segments, start=1):
-        out = os.path.join(sound_dir, f"mxblue_{idx:03d}.wav")
+        out = os.path.join(sound_dir, f"sound_{idx:03d}.wav")
         off_s = off_ms / 1000.0
         dur_s = dur_ms / 1000.0
         cmd = [
@@ -167,12 +174,16 @@ def _clear_old_synthetic_clicks(sound_dir):
         pass
 
 
-def download_mechvibes_cherrymx_blue_slices(sound_dir):
-    """Mechvibes cherrymx-blue-abs: sound.ogg içinden gerçek tuş seslerini WAV yapar."""
-    cfg_url = f"{MECHVIBES_BLUE_ABS_BASE}/config.json"
-    ogg_url = f"{MECHVIBES_BLUE_ABS_BASE}/sound.ogg"
+def _mechvibes_pack_urls(remote_slug):
+    base = f"{MECHVIBES_RAW_BASE}/{remote_slug}"
+    return f"{base}/config.json", f"{base}/sound.ogg"
 
-    print("📥 Mechvibes Cherry MX Blue (ABS) gerçek ses paketi indiriliyor…")
+
+def download_mechvibes_ogg_slices(sound_dir, remote_slug="cherrymx-blue-abs", label=None):
+    """Mechvibes profili (ör. cherrymx-blue-abs): sound.ogg içinden gerçek tuş WAV üretir."""
+    cfg_url, ogg_url = _mechvibes_pack_urls(remote_slug)
+    label = label or remote_slug
+    print("📥 Mechvibes %s — gerçek ses dilimleri indiriliyor…" % label)
     tmp = tempfile.mkdtemp(prefix="mechkeys_dl_")
     ogg_path = os.path.join(tmp, "sound.ogg")
     cfg_path = os.path.join(tmp, "config.json")
@@ -243,7 +254,7 @@ def download_mechvibes_cherrymx_blue_slices(sound_dir):
             chunk = raw[start_byte : start_byte + n_bytes]
             if len(chunk) < n_bytes:
                 chunk = chunk + b"\x00" * (n_bytes - len(chunk))
-            out_path = os.path.join(sound_dir, f"mxblue_{idx:03d}.wav")
+            out_path = os.path.join(sound_dir, f"sound_{idx:03d}.wav")
             with wave.open(out_path, "w") as wf:
                 wf.setnchannels(channels)
                 wf.setsampwidth(sample_width)
@@ -263,6 +274,13 @@ def download_mechvibes_cherrymx_blue_slices(sound_dir):
     _clear_old_synthetic_clicks(sound_dir)
     print(f"  ℹ️  {made} benzersiz gerçek tuş vuruşu WAV olarak kaydedildi.")
     return True
+
+
+def download_mechvibes_cherrymx_blue_slices(sound_dir):
+    """Geriye dönük uyumluluk: blue-abs paketini hedef klasöre indirir."""
+    return download_mechvibes_ogg_slices(
+        sound_dir, remote_slug="cherrymx-blue-abs", label="Cherry MX Blue (ABS)"
+    )
 
 
 def download_mechvibes_pack(sound_dir):
@@ -287,14 +305,47 @@ def download_mechvibes_pack(sound_dir):
         return False
 
 
+def _dir_has_any_wav(path):
+    if not os.path.isdir(path):
+        return False
+    try:
+        for root, _dirs, files in os.walk(path):
+            for f in files:
+                if f.lower().endswith(".wav"):
+                    return True
+    except OSError:
+        pass
+    return False
+
+
 def main():
     os.makedirs(SOUND_DIR, exist_ok=True)
-    
+
     print("🎵 MechKeys - Ses Dosyası Kurulumu")
     print("=" * 40)
-    
-    # 1. Gerçek Mechvibes Cherry MX Blue (GitHub OGG + config dilimleri)
-    if download_mechvibes_cherrymx_blue_slices(SOUND_DIR):
+
+    # 1. Birden fazla Mechvibes profili → alt klasörler (menüden seçilir)
+    installed_any = False
+    for slug, folder_name in DEFAULT_MECHVIBES_PACKS:
+        target = os.path.join(SOUND_DIR, folder_name)
+        if _dir_has_any_wav(target):
+            print("⏭  Zaten WAV var, atlanıyor: %s" % folder_name)
+            installed_any = True
+            continue
+        os.makedirs(target, exist_ok=True)
+        if download_mechvibes_ogg_slices(target, remote_slug=slug, label=folder_name):
+            installed_any = True
+            print("✅ Paket hazır: %s → %s" % (folder_name, target))
+
+    if installed_any:
+        print(f"\n✅ Ses klasörü: {SOUND_DIR}")
+        print("   Uygulama menüsünden «Ses seti» ile paketi seçebilirsin.")
+        return
+
+    # 1b. Eski düzen: yalnızca kökte WAV yoksa köke Blue indirmeyi dene
+    if not _dir_has_any_wav(SOUND_DIR) and download_mechvibes_ogg_slices(
+        SOUND_DIR, remote_slug="cherrymx-blue-abs", label="Cherry MX Blue (ABS)"
+    ):
         print(f"\n✅ Gerçek mekanik klavye sesleri hazır: {SOUND_DIR}")
         return
 
