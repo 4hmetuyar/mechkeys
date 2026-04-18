@@ -100,7 +100,11 @@ class MechKeysApp(rumps.App):
             if d.objectForKey_(UD_VOLUME_PERCENT) is None:
                 return 0.8
             v = float(d.doubleForKey_(UD_VOLUME_PERCENT)) / 100.0
-            return max(0.0, min(1.0, v))
+            v = max(0.0, min(1.0, v))
+            # Slider kaydetmiş 0.0 → sessiz; çoğu kullanıcıda yanlışlıkla 0 kalmış olur
+            if v < 0.001:
+                return 0.8
+            return v
         except Exception:
             return 0.8
 
@@ -291,15 +295,18 @@ class MechKeysApp(rumps.App):
         digest = hashlib.md5(fp.encode("utf-8")).digest()
         return int.from_bytes(digest[:4], "big") % n
 
-    def _play_sound(self, key):
-        """Tuş başına sabit bir WAV; farklı tuşlar havuza dağıtılır."""
+    def _play_sound_on_main_thread(self, key):
+        """pygame mixer ana iş parçacığında güvenilir çalışır (macOS)."""
         if not self.sounds or not self.enabled:
             return
         idx = self._sound_index_for_key(key)
-        self.sounds[idx].play()
+        try:
+            self.sounds[idx].play()
+        except Exception:
+            pass
 
     def _on_press(self, key):
-        """Keyboard event handler — tuş tekrarında debounce."""
+        """Keyboard event handler — debounce; ses çalma ana kuyrukta."""
         if not self.enabled:
             return
         fp = self._key_fingerprint(key)
@@ -309,7 +316,18 @@ class MechKeysApp(rumps.App):
             if now - last < KEY_DEBOUNCE_SEC:
                 return
             self._last_key_time[fp] = now
-        threading.Thread(target=self._play_sound, args=(key,), daemon=True).start()
+
+        try:
+            from Foundation import NSOperationQueue
+
+            NSOperationQueue.mainQueue().addOperationWithBlock_(
+                lambda k=key: self._play_sound_on_main_thread(k)
+            )
+        except Exception:
+            threading.Thread(
+                target=lambda: self._play_sound_on_main_thread(key),
+                daemon=True,
+            ).start()
 
     def _start_listener(self):
         """Start global keyboard listener."""
