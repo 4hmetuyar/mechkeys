@@ -66,8 +66,6 @@ class MechKeysApp(rumps.App):
         self.open_listen_item = rumps.MenuItem("Giriş izleme ayarları…", callback=self._open_input_monitoring_settings)
         self.reload_sounds_item = rumps.MenuItem("Sesleri yeniden yükle", callback=self._reload_sounds_menu)
 
-        self.footer_item = rumps.MenuItem("Kaynak: Mechvibes · MIT", callback=None)
-
         self.pack_submenu_item = rumps.MenuItem("Ses seti")
         self._pack_choice_rows = []
 
@@ -85,8 +83,6 @@ class MechKeysApp(rumps.App):
             self.open_access_item,
             self.open_listen_item,
             self.reload_sounds_item,
-            None,
-            self.footer_item,
             None,
             rumps.MenuItem("Çıkış", callback=self.quit_app, key="q"),
         ]
@@ -409,14 +405,6 @@ class MechKeysApp(rumps.App):
                     size=11.0,
                     weight=NSFontWeightRegular,
                     color=NSColor.secondaryLabelColor(),
-                )
-            )
-            self.footer_item._menuitem.setAttributedTitle_(
-                attr(
-                    "Kaynak: Mechvibes · MIT",
-                    size=10.0,
-                    weight=NSFontWeightRegular,
-                    color=NSColor.tertiaryLabelColor(),
                 )
             )
         except Exception:

@@ -7,7 +7,7 @@ macOS menü çubuğunda çalışan, tuş basışlarında **Cherry MX Blue** tarz
 | **Depo** | [github.com/4hmetuyar/mechkeys](https://github.com/4hmetuyar/mechkeys) |
 | **Hazır sürüm** | [Releases](https://github.com/4hmetuyar/mechkeys/releases) (`.dmg` / `.zip`) |
 | **Dağıtım / CI / Gatekeeper** | [docs/DISTRIBUTING.md](docs/DISTRIBUTING.md) |
-| **Lisans** | MIT — `LICENSE` · ses kaynağı uygulama içi footer’da |
+| **Lisans** | MIT — `LICENSE` |
 
 ---
 
