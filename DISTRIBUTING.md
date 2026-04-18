@@ -32,6 +32,36 @@ gh repo create mechkeys --public --source=. --remote=origin --push
 
 İsim çakışırsa `--public` yanına farklı bir depo adı ver.
 
+### Yerelde: GitHub’daki son değişiklikleri almak
+
+Başka bir bilgisayarda veya aynı klasörde depo zaten `origin` ile bağlıysa:
+
+```bash
+cd /path/to/mechkeys
+git fetch origin
+git pull origin main
+```
+
+Çakışma çıkarsa önce `git status` ile bak; gerekirse değişikliklerini commit’le veya `git stash` kullan.
+
+### GitHub Actions’ı açmak (otomatik Release / derleme)
+
+1. Depoda **Settings → Actions → General**
+2. **Actions permissions:** *Allow all actions and reusable workflows* (veya kurumsal politikan ne gerektiriyorsa).
+3. **Workflow permissions:** *Read and write permissions* seçili olsun (Release’e dosya eklemek için).
+4. Solda **Actions** sekmesi → **Release (macOS)** iş akışının **Enable workflow** ile kapalı olmadığından emin ol.
+
+Yeni sürüm zip/dmg üretmek için etiket it:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+İş akışı bittikten sonra **Releases** sayfasında `v1.0.1` ve eklenen dosyalar görünür.
+
+> Kurulu `.app` kullanan son kullanıcı: GitHub “güncellemesi” otomatik inmez; yeni **Release**’ten yeni `.dmg` / `.zip` indirip uygulamayı değiştirmesi gerekir.
+
 ---
 
 ## 1. Ne üreteceksin?
