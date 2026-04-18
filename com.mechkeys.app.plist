@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mechkeys.app</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- pip kurulumundan sonra: which mechkeys ile tam yolu yaz -->
+        <string>/usr/local/bin/mechkeys</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/mechkeys.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/mechkeys-error.log</string>
+</dict>
+</plist>

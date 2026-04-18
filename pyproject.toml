@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mechkeys-macos"
+version = "1.0.0"
+description = "macOS menü çubuğunda Cherry MX Blue tarzı tuş sesleri (Mechvibes kaynaklı)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["macos", "keyboard", "rumps", "mechanical", "sound"]
+classifiers = [
+  "Environment :: MacOS X",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS :: MacOS X",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "rumps>=0.4.0",
+  "pynput>=1.7.6",
+  "pygame>=2.5.0",
+]
+
+[project.scripts]
+mechkeys = "mechkeys.app:main"
+mechkeys-download-sounds = "mechkeys.download_sounds:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mechkeys"]

@@ -1,0 +1,4 @@
+# Doğrudan bağımlılıklar (kurulum yapılandırması pyproject.toml içinde)
+rumps>=0.4.0
+pynput>=1.7.6
+pygame>=2.5.0

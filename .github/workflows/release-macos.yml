@@ -1,0 +1,47 @@
+# v* etiketi itilince macOS'ta derler ve GitHub Release'e zip ekler.
+# Gerekli izin: Settings → Actions → General → Workflow permissions → Read and write
+
+name: Release (macOS)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ses paketi (kökte WAV yoksa indir)
+        run: |
+          pip install -e .
+          if ! compgen -G "sounds/*.wav" > /dev/null 2>&1; then
+            python3 -c "from mechkeys.download_sounds import main; main()" || true
+          fi
+        shell: bash
+
+      - name: Derle
+        run: |
+          chmod +x scripts/build_macos_release.sh
+          ./scripts/build_macos_release.sh
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: dist/MechKeys-macos-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
